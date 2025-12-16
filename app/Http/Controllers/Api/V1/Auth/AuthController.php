@@ -2,18 +2,26 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Http\Controllers\Api\V1\AbstractApiController;
-use App\Http\Requests\Api\V1\Auth\LoginRequest;
-use App\Http\Requests\Api\V1\Auth\RegistrationRequest;
-use App\Models\User;
-use Illuminate\Http\JsonResponse;
-use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
-use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenBlacklistedException;
+use App\Contracts\{
+    Actions\User\LoginActionContract,
+    Actions\User\LogoutActionContract,
+    Actions\User\RefreshActionContract,
+    Actions\User\UserDataActionContract,
+    Actions\User\RegistrationActionContract
+};
 
-class AuthController extends AbstractApiController
+use App\Http\Requests\{
+    Api\V1\Auth\LoginRequest,
+    Api\V1\Auth\RegistrationRequest
+};
+
+use App\Facades\ApiResponse;
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use Spatie\DataTransferObject\Exceptions\UnknownProperties;
+
+class AuthController extends Controller
 {
-    private bool $loginProcessMethod = false;
-    private string $token = '';
 
     /**
      * Create a new AuthController instance.
@@ -77,23 +85,16 @@ class AuthController extends AbstractApiController
      * )
      *
      * @param RegistrationRequest $request
+     * @param RegistrationActionContract $action
      * @return JsonResponse
+     * @throws UnknownProperties
      */
-    public function registration(RegistrationRequest $request): JsonResponse
+    public function registration(RegistrationRequest $request, RegistrationActionContract $action): JsonResponse
     {
-        $credentials = $request->all();
-
-        try {
-            User::create([
-                'name' => $credentials['name'],
-                'email' => $credentials['email'],
-                'password' => bcrypt($credentials['password'])
-            ]);
-        } catch(\Exception $error) {
-            return $this->responseJSON(__('auth.response.422.register', 422));
-        }
-
-        return $this->loginProcess($credentials);
+        return ApiResponse::success(
+            __('auth.response.200.register'),
+            $action($request->toDTO()),
+        );
     }
 
     /**
@@ -156,14 +157,17 @@ class AuthController extends AbstractApiController
      * )
      *
      * @param LoginRequest $request
+     * @param LoginActionContract $action
      * @return JsonResponse
+     * @throws UnknownProperties
      */
 
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request, LoginActionContract $action): JsonResponse
     {
-        $this->loginProcessMethod = true;
-        $credentials = $request->all();
-        return $this->loginProcess($credentials);
+        return ApiResponse::success(
+            __('auth.response.200.login'),
+            $action($request->toDTO()),
+        );
     }
 
     /**
@@ -205,15 +209,14 @@ class AuthController extends AbstractApiController
      *     )
      * )
      *
+     * @param UserDataActionContract $action
      * @return JsonResponse
      */
-    public function me(): JsonResponse
+    public function me(UserDataActionContract $action): JsonResponse
     {
-        $user_data = auth()->user();
-        return $this->responseJSON(
+        return ApiResponse::success(
             __('auth.response.200.me'),
-            200,
-            $user_data != null ? $user_data->toArray() : []
+            $action(),
         );
     }
 
@@ -249,12 +252,15 @@ class AuthController extends AbstractApiController
      *     )
      * )
      *
+     * @param LogoutActionContract $action
      * @return JsonResponse
      */
-    public function logout(): JsonResponse
+    public function logout(LogoutActionContract $action): JsonResponse
     {
-        auth()->logout();
-        return $this->responseJSON(__('auth.response.200.logout'));
+        return ApiResponse::success(
+            __('auth.response.200.logout'),
+            $action(),
+        );
     }
 
     /**
@@ -293,54 +299,14 @@ class AuthController extends AbstractApiController
      *     )
      * )
      *
+     * @param RefreshActionContract $action
      * @return JsonResponse
      */
-    public function refresh(): JsonResponse
+    public function refresh(RefreshActionContract $action): JsonResponse
     {
-        try {
-            $this->token = auth()->refresh();
-            if(!empty($this->token)) {
-                return $this->responseJSON(
-                    __('auth.response.200.refresh_token'),
-                    200,
-                    $this->getTokenData()
-                );
-            }
-            return $this->responseJSON(__('auth.response.422.token'), 422);
-        } catch(TokenBlacklistedException | JWTException $err) {
-            return $this->responseJSON($err->getMessage(), 422, []);
-        }
-    }
-
-    /**
-     * Method login user
-     *
-     * @param  array $credentials
-     *
-     * @return JsonResponse
-     */
-    private function loginProcess(array $credentials): JsonResponse {
-        if (! $this->token = auth()->attempt($credentials)) {
-            return $this->responseJSON(__('auth.response.401.login'), 401);
-        }
-
-        return $this->responseJSON(
-            $this->loginProcessMethod ? __('auth.response.200.login') : __('auth.response.200.register'),
-            200,
-            $this->getTokenData()
+        return ApiResponse::success(
+            __('auth.response.200.refresh_token'),
+            $action(),
         );
-    }
-
-    /**
-     * Get current user token
-     *
-     * @return array
-     */
-    protected function getTokenData(): array {
-        return [
-            'access_token'  => $this->token,
-            'token_type'    => 'bearer',
-            'expires_in'    => auth()->factory()->getTTL() * 60
-        ];
     }
 }

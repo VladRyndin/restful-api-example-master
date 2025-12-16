@@ -2,18 +2,18 @@
 
 namespace App\Http\Requests\Api\V1\Auth;
 
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
+use App\DataTransferObjects\User\Auth\RegistrationDTO;
+use App\Http\Requests\Api\BaseFormRequest;
+use Spatie\DataTransferObject\Exceptions\UnknownProperties;
 
-class RegistrationRequest extends FormRequest
+class RegistrationRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, mixed>
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             'name'                  => 'required|max:255',
@@ -24,18 +24,17 @@ class RegistrationRequest extends FormRequest
     }
 
     /**
-     * Handle a failed validation attempt.
-     * @param  Validator $validator
+     * Convert the current request data into a Registration Data Transfer Object (DTO).
      *
-     * @return HttpResponseException
+     * @return RegistrationDTO
+     * @throws UnknownProperties
      */
-    public function failedValidation(Validator $validator): HttpResponseException
+    public function toDTO(): RegistrationDTO
     {
-        throw new HttpResponseException(response()->json([
-            'success'   => false,
-            'message'   => __('auth.response.422.validation'),
-            'version'   => 'v1',
-            'data'      => $validator->errors()
-        ], 422));
+        return new RegistrationDTO(
+            first_name: $this->get('name'),
+            email: $this->get('email'),
+            password: $this->get('password')
+        );
     }
 }

@@ -2,18 +2,18 @@
 
 namespace App\Http\Requests\Api\V1\Auth;
 
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
+use App\DataTransferObjects\User\Auth\LoginDTO;
+use App\Http\Requests\Api\BaseFormRequest;
+use Spatie\DataTransferObject\Exceptions\UnknownProperties;
 
-class LoginRequest extends FormRequest
+class LoginRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, mixed>
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             'email'     => 'required|max:255|email:rfc,dns|',
@@ -22,18 +22,15 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Handle a failed validation attempt.
-     * @param  Validator $validator
-     *
-     * @return HttpResponseException
+     * Convert the current request data into a Login Data Transfer Object (DTO).
+     * @return LoginDTO
+     * @throws UnknownProperties
      */
-    public function failedValidation(Validator $validator): HttpResponseException
+    public function toDTO(): LoginDTO
     {
-        throw new HttpResponseException(response()->json([
-            'success'   => false,
-            'message'   => __('auth.response.422.validation'),
-            'version'   => 'v1',
-            'data'      => $validator->errors()
-        ], 422));
+        return new LoginDTO(
+            email: $this->get('email'),
+            password: $this->get('password')
+        );
     }
 }
