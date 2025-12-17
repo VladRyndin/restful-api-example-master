@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'ApiResponse' => \App\Facades\ApiResponse::class,
+    'ApiResponse' => \App\Support\ApiResponseSupport::class,
 ];
