@@ -13,7 +13,7 @@ class HelperServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $helpers = config('helpers.user_helpers', []);
+        $helpers = config('helpers.users_helper', []);
 
         foreach ($helpers as $contract => $implementation) {
             $this->app->bind($contract, fn() => $this->makeAction($implementation));
