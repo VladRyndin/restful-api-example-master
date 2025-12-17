@@ -9,12 +9,7 @@ class RegistrationDTO extends DataTransferObject
     /**
      * @var string
      */
-    public string $first_name;
-
-    /**
-     * @var string
-     */
-    public string $last_name;
+    public string $name;
 
     /**
      * @var string
@@ -27,12 +22,7 @@ class RegistrationDTO extends DataTransferObject
     public string $password;
 
     /**
-     * @var int
+     * @var ?string
      */
-    public int $app_pricing_plan_id;
-
-    /**
-     * @var string
-     */
-    public string $ip;
+    public ?string $ip;
 }

@@ -32,7 +32,7 @@ class RegistrationRequest extends BaseFormRequest
     public function toDTO(): RegistrationDTO
     {
         return new RegistrationDTO(
-            first_name: $this->get('name'),
+            name: $this->get('name'),
             email: $this->get('email'),
             password: $this->get('password')
         );

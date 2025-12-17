@@ -8,9 +8,11 @@ class LogoutAction implements LogoutActionContract
 {
     /**
      * Invoke the action for logout user.
+     * @return bool
      */
-    public function __invoke(): void
+    public function __invoke(): bool
     {
         auth()->logout();
+        return true;
     }
 }

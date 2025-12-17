@@ -6,6 +6,7 @@ interface LogoutActionContract
 {
     /**
      * Invoke the action for logout user.
+     * @return bool
      */
-    public function __invoke(): void;
+    public function __invoke(): bool;
 }

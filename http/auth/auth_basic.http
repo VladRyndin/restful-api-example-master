@@ -1,0 +1,38 @@
+@baseUrl = http://localhost/api/v1
+
+### POST Registration endpoint
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "name": "Test",
+    "email": "test_user@gmail.com",
+    "password": "Password1",
+    "password_confirmation": "Password1"
+}
+
+### POST Login endpoint
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "test_user@gmail.com",
+    "password": "Password1"
+}
+
+> {% client.global.set("token", response.body.data.access_token); %}
+
+### POST Logout endpoint
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{token}}
+
+### POST Refresh auth token endpoint
+POST {{baseUrl}}/auth/refresh
+Authorization: Bearer {{token}}
+
+> {% client.global.set("token", response.body.data.access_token); %}
+
+### GET Information about User endpoint
+GET http://localhost/api/v1/auth/me
+Authorization: Bearer {{token}}
+

@@ -196,6 +196,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\ActionServiceProvider::class,
         App\Providers\FacadeServiceProvider::class,
+        App\Providers\HelperServiceProvider::class,
 
     ],
 

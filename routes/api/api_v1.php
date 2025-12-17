@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Api\V1\Auth\AuthController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -15,9 +14,13 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::group(['prefix' => 'auth', 'namespace' => 'Auth'], function ($router) {
-    Route::post('logout', 'AuthController@logout')->middleware('jwt')->name('auth_logout_v1');
-    Route::post('me', 'AuthController@me')->middleware('jwt')->name('auth_me_v1');
-    Route::post('login', 'AuthController@login')->name('auth_login_v1');
-    Route::post('register', 'AuthController@registration')->name('auth_registration_v1');
-    Route::post('refresh', 'AuthController@refresh')->name('auth_refresh_token_v1');
+    Route::group(['middleware' => 'jwt'], function () {
+        Route::post('logout', [AuthController::class, 'logout'])->name('auth_logout_v1');
+        //TODO: review this endpoint
+        Route::get('me', [AuthController::class, 'me'])->name('auth_me_v1');
+    });
+
+    Route::post('login', [AuthController::class, 'login'])->name('auth_login_v1');
+    Route::post('register', [AuthController::class, 'registration'])->name('auth_registration_v1');
+    Route::post('refresh', [AuthController::class, 'refresh'])->name('auth_refresh_token_v1');
 });
